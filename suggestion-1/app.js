@@ -14,6 +14,8 @@ L.tileLayer(
 ).addTo(map);
 
 let activeMarker = null;
+let activeIsHotel = false;
+let distanceModeActive = false;
 
 sidebar.addEventListener("transitionend", (event) => {
   if (event.propertyName === "width") {
@@ -80,6 +82,8 @@ function closePanel() {
     activeMarker._icon?.classList.remove("marker-badge--active");
     activeMarker = null;
   }
+  activeIsHotel = false;
+  clearDistanceBox();
 }
 
 function makeBadgeIcon({ size, background, content, extraClass = "" }) {
@@ -91,8 +95,37 @@ function makeBadgeIcon({ size, background, content, extraClass = "" }) {
   });
 }
 
+// Hotels always just select/open normally — the toggle never changes this.
+// Whichever hotel is currently open becomes the reference point for the
+// Distance feature below.
+function handleHotelClick(hotel, marker) {
+  activeMarker?._icon?.classList.remove("marker-badge--active");
+  marker._icon?.classList.add("marker-badge--active");
+  activeMarker = marker;
+  activeIsHotel = true;
+  clearDistanceBox();
+  renderPropertyPanel(hotel);
+}
+
+// POIs behave normally (open their own panel) UNLESS the Distance toggle is
+// on AND a hotel is currently selected — then clicking a POI shows a fake
+// distance box from that hotel instead of opening the POI's own panel.
+function handlePoiClick(poi, marker) {
+  if (distanceModeActive) {
+    if (activeIsHotel && activeMarker) {
+      showDistanceBoxFor(poi, marker);
+    }
+    return;
+  }
+
+  activeMarker?._icon?.classList.remove("marker-badge--active");
+  marker._icon?.classList.add("marker-badge--active");
+  activeMarker = marker;
+  activeIsHotel = false;
+  renderPoiPanel(poi);
+}
+
 const allBounds = [];
-const poiMarkers = [];
 
 FAKE_HOTELS.forEach((hotel) => {
   const marker = L.marker([hotel.lat, hotel.lng], {
@@ -105,13 +138,7 @@ FAKE_HOTELS.forEach((hotel) => {
   }).addTo(map);
 
   marker.bindTooltip(hotel.name, { direction: "top", offset: [0, -20] });
-
-  marker.on("click", () => {
-    activeMarker?._icon?.classList.remove("marker-badge--active");
-    marker._icon?.classList.add("marker-badge--active");
-    activeMarker = marker;
-    renderPropertyPanel(hotel);
-  });
+  marker.on("click", () => handleHotelClick(hotel, marker));
 
   allBounds.push([hotel.lat, hotel.lng]);
 });
@@ -127,15 +154,8 @@ FAKE_POIS.forEach((poi) => {
   }).addTo(map);
 
   marker.bindTooltip(poi.name, { direction: "top", offset: [0, -14] });
+  marker.on("click", () => handlePoiClick(poi, marker));
 
-  marker.on("click", () => {
-    activeMarker?._icon?.classList.remove("marker-badge--active");
-    marker._icon?.classList.add("marker-badge--active");
-    activeMarker = marker;
-    renderPoiPanel(poi);
-  });
-
-  poiMarkers.push({ poi, marker });
   allBounds.push([poi.lat, poi.lng]);
 });
 
@@ -162,60 +182,79 @@ legend.onAdd = function () {
 };
 legend.addTo(map);
 
-// --- Distance Toggle (MSC-10368) ---
-// Fake-data preview: flipping the toggle shows a "X miles away" box next to
-// each point of interest, without affecting hotel selection.
+// --- Distance Toggle (MSC-10368 idea II) ---
+// The reference point is always whichever hotel is currently open in the
+// sidebar. With the toggle on, clicking a point of interest shows a distance
+// box (styled like the original) instead of opening that POI's own panel.
+// Clicking a different hotel just selects it, same as normal browsing.
 
-let distanceBoxMarkers = [];
+let distanceBoxMarker = null;
+let distanceBoxPoiId = null;
 
-function showDistanceBoxes() {
-  poiMarkers.forEach(({ poi }) => {
-    const icon = L.divIcon({
-      className: "distance-box-icon",
-      html: `
-        <div class="distance-box">
-          <div class="distance-box__value">${poi.distanceMiles.toFixed(2)} miles away</div>
-          <div class="distance-box__name">${poi.name}</div>
-        </div>
-      `,
-      iconSize: [170, 46],
-      iconAnchor: [-22, 23],
-    });
-    const boxMarker = L.marker([poi.lat, poi.lng], {
-      icon,
-      interactive: false,
-      zIndexOffset: 1000,
-      keyboard: false,
-    }).addTo(map);
-    distanceBoxMarkers.push(boxMarker);
-  });
+function clearDistanceBox() {
+  if (distanceBoxMarker) {
+    map.removeLayer(distanceBoxMarker);
+    distanceBoxMarker = null;
+    distanceBoxPoiId = null;
+  }
 }
 
-function hideDistanceBoxes() {
-  distanceBoxMarkers.forEach((marker) => map.removeLayer(marker));
-  distanceBoxMarkers = [];
+function showDistanceBoxFor(poi, marker) {
+  if (distanceBoxPoiId === poi.id) {
+    clearDistanceBox();
+    return;
+  }
+
+  clearDistanceBox();
+
+  const miles = map.distance(activeMarker.getLatLng(), marker.getLatLng()) / 1609.34;
+
+  const icon = L.divIcon({
+    className: "distance-box-icon",
+    html: `
+      <div class="distance-box">
+        <div class="distance-box__value">${miles.toFixed(2)} miles away</div>
+        <div class="distance-box__name">${poi.name}</div>
+      </div>
+    `,
+    iconSize: [170, 46],
+    iconAnchor: [-22, 23],
+  });
+
+  distanceBoxMarker = L.marker(marker.getLatLng(), {
+    icon,
+    interactive: false,
+    zIndexOffset: 1000,
+    keyboard: false,
+  }).addTo(map);
+  distanceBoxPoiId = poi.id;
 }
 
 const distanceControl = L.control({ position: "bottomright" });
 distanceControl.onAdd = function () {
   const div = L.DomUtil.create("div", "distance-toggle-control");
   div.innerHTML = `
-    <label class="switch">
-      <input type="checkbox" id="distanceToggle" />
-      <span class="switch-slider"></span>
-    </label>
-    <span class="distance-toggle-label">Distance</span>
-    <span class="distance-toggle-unit">mi</span>
+    <div class="distance-toggle-row">
+      <label class="switch">
+        <input type="checkbox" id="distanceToggle" />
+        <span class="switch-slider"></span>
+      </label>
+      <span class="distance-toggle-label">Distance</span>
+      <span class="distance-toggle-unit">mi</span>
+    </div>
+    <div class="distance-toggle-hint">Select a hotel, then click a point of interest</div>
   `;
   L.DomEvent.disableClickPropagation(div);
   return div;
 };
 distanceControl.addTo(map);
 
+const distanceControlEl = distanceControl.getContainer();
+
 document.getElementById("distanceToggle").addEventListener("change", (event) => {
-  if (event.target.checked) {
-    showDistanceBoxes();
-  } else {
-    hideDistanceBoxes();
+  distanceModeActive = event.target.checked;
+  distanceControlEl.classList.toggle("distance-toggle-control--active", distanceModeActive);
+  if (!distanceModeActive) {
+    clearDistanceBox();
   }
 });

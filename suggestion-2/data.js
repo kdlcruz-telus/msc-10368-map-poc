@@ -25,7 +25,6 @@ const FAKE_HOTELS = [
 ];
 
 // Mirrors the "Points of Interest" filter categories/icons from the app.
-// distanceMiles is fake data used by the Distance Toggle feature.
 const FAKE_POIS = [
   {
     id: "poi-airport",
@@ -35,7 +34,6 @@ const FAKE_POIS = [
     color: "#334155",
     lat: 40.7205,
     lng: -74.0045,
-    distanceMiles: 0.42,
   },
   {
     id: "poi-accommodation",
@@ -45,7 +43,6 @@ const FAKE_POIS = [
     color: "#7c3aed",
     lat: 40.7355,
     lng: -74.0018,
-    distanceMiles: 0.13,
   },
   {
     id: "poi-bar",
@@ -55,7 +52,6 @@ const FAKE_POIS = [
     color: "#db2777",
     lat: 40.7268,
     lng: -73.9925,
-    distanceMiles: 0.08,
   },
   {
     id: "poi-coffee",
@@ -65,7 +61,6 @@ const FAKE_POIS = [
     color: "#a16207",
     lat: 40.7422,
     lng: -73.9945,
-    distanceMiles: 0.05,
   },
   {
     id: "poi-restaurant",
@@ -75,7 +70,6 @@ const FAKE_POIS = [
     color: "#dc2626",
     lat: 40.7332,
     lng: -73.9868,
-    distanceMiles: 0.19,
   },
   {
     id: "poi-park",
@@ -85,6 +79,5 @@ const FAKE_POIS = [
     color: "#16a34a",
     lat: 40.7449,
     lng: -73.9998,
-    distanceMiles: 0.27,
   },
 ];

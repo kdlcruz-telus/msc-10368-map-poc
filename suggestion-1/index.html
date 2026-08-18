@@ -3,7 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MSC-10368 Map UX Spike (POC)</title>
+    <title>MSC-10368 Map UX Spike — Suggestion 1 (Distance Toggle)</title>
+    <script>
+      // Without a trailing slash, relative resources (styles.css, app.js)
+      // resolve against the parent folder instead of this one.
+      if (!location.pathname.endsWith("/")) {
+        location.replace(location.pathname + "/" + location.search + location.hash);
+      }
+    </script>
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
