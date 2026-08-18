@@ -1,0 +1,348 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  color: #1f2937;
+}
+
+.app {
+  position: fixed;
+  inset: 0;
+  display: flex;
+}
+
+.sidebar {
+  width: 0;
+  flex: 0 0 0;
+  height: 100%;
+  overflow: hidden;
+  border-right: 1px solid transparent;
+  background: #ffffff;
+  z-index: 10;
+  transition: width 0.25s ease, flex-basis 0.25s ease, border-color 0.25s ease;
+}
+
+.sidebar.sidebar--open {
+  width: 360px;
+  flex: 0 0 360px;
+  overflow-y: auto;
+  border-right: 1px solid #e5e7eb;
+}
+
+#map {
+  flex: 1 1 auto;
+  height: 100%;
+}
+
+.hint {
+  color: #6b7280;
+  font-style: italic;
+}
+
+.property-panel {
+  padding: 20px;
+}
+
+.property-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.property-panel__close {
+  border: none;
+  background: #f3f4f6;
+  border-radius: 999px;
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  color: #374151;
+  flex: 0 0 auto;
+}
+
+.property-panel__close:hover {
+  background: #e5e7eb;
+}
+
+.brand-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 8px;
+}
+
+.brand-tag__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.brand-tag__badge {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.brand-tag__badge--icon {
+  font-size: 12px;
+}
+
+.property-panel__name {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+
+.property-panel__row {
+  display: flex;
+  gap: 8px;
+  font-size: 14px;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.property-panel__row-label {
+  flex: 0 0 70px;
+  color: #6b7280;
+}
+
+.legend {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  z-index: 5;
+  max-width: 230px;
+}
+
+.legend-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.legend-title--spaced {
+  margin-top: 10px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+
+.legend-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.legend-dot--icon {
+  font-size: 10px;
+}
+
+.legend-note {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e5e7eb;
+  color: #6b7280;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+/* Leaflet marker badges (hotels + POIs) */
+.msc-marker {
+  background: transparent;
+  border: none;
+}
+
+.marker-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+  border: 2px solid #fff;
+  cursor: pointer;
+}
+
+.marker-badge--hotel {
+  font-size: 18px;
+  border-width: 3px;
+}
+
+.marker-badge--poi {
+  font-size: 15px;
+  border-width: 2px;
+}
+
+.marker-badge--active {
+  outline: 3px solid rgba(37, 99, 235, 0.6);
+  outline-offset: 2px;
+}
+
+/* Distance Toggle control */
+.distance-toggle-control {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 8px 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  font-size: 13px;
+}
+
+.distance-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.distance-toggle-hint {
+  display: none;
+  font-size: 11px;
+  color: #6b7280;
+  max-width: 210px;
+  line-height: 1.3;
+}
+
+.distance-toggle-control--active .distance-toggle-hint {
+  display: block;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch-slider {
+  position: absolute;
+  inset: 0;
+  background: #d1d5db;
+  border-radius: 999px;
+  transition: background 0.15s ease;
+}
+
+.switch-slider::before {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  left: 2px;
+  top: 2px;
+  background: #ffffff;
+  border-radius: 50%;
+  transition: transform 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.switch input:checked + .switch-slider {
+  background: #0d9488;
+}
+
+.switch input:checked + .switch-slider::before {
+  transform: translateX(16px);
+}
+
+.distance-toggle-label {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.distance-toggle-unit {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+/* Distance icon / box (icon toggles into a box when clicked) */
+.distance-aux-icon {
+  background: transparent;
+  border: none;
+}
+
+/* Placeholder text button standing in for a real distance icon (TBD design) */
+.distance-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1.5px solid #2563eb;
+  color: #2563eb;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+.distance-icon-badge--loading {
+  border-color: #9ca3af;
+  color: #6b7280;
+  cursor: default;
+}
+
+.distance-box {
+  display: inline-block;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 6px 10px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+  cursor: default;
+}
+
+.distance-box__value {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.distance-box__name {
+  font-size: 12px;
+  color: #6b7280;
+}
